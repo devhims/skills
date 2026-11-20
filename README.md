@@ -1,6 +1,14 @@
 # skills
 
-Agent skills by [@devhims](https://github.com/devhims). They work with Claude Code, Codex, Cursor, Kiro and other agents that support `SKILL.md` skills.
+Agent skills from my own development workflows: practical, tested, and refined through daily use. Each one started as something I kept doing by hand, then got tested on real projects, fixed where it broke, and written down so an agent can do it reliably. I add new ones as my workflows grow.
+
+They work with Claude Code, Codex, Cursor, Kiro and other agents that support `SKILL.md` skills.
+
+```bash
+npx skills add devhims/skills
+```
+
+— [@devhims](https://github.com/devhims)
 
 ## codex-imagegen-cli
 
