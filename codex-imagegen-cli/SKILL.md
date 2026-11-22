@@ -1,6 +1,6 @@
 ---
 name: codex-imagegen-cli
-description: Generate raster images with the image_generation tool built into OpenAI's Codex CLI (codex exec, read-only sandbox), with optional reference images, and copy them into the project folder. Use for AI text-to-image, reference-image edits and restyles, character turnaround sheets, location plates, storyboard frames, and transparent-background cutouts.
+description: Generate raster images with the image_generation tool built into OpenAI's Codex CLI (codex exec, read-only sandbox), with optional reference images, one image or several in parallel, and copy them into the project folder. Use for AI text-to-image, reference-image edits and restyles, character turnaround sheets, location plates, storyboard frames, and transparent-background cutouts.
 license: MIT
 ---
 
@@ -22,6 +22,8 @@ the result into the project with a small local script.
   user asked for Codex specifically.
 - You need image-to-image work: keep a character or layout from a reference
   image and restyle, extend or re-pose it.
+- You need several images at once (variants, a storyboard, a set of
+  assets). Independent images run in parallel; see "Several images at once".
 
 Each image spends the user's Codex quota. Unless the user asked for
 Codex/AI image generation, ask before running it.
@@ -98,9 +100,47 @@ to install and stop.
    with one new run that names the fault plainly, passing the last good
    output with `-i` so identity carries forward. Ask the user before a third
    attempt at the same image.
-6. **Batch carefully.** Run one image per call. Record the prompt, the refs
-   and the output path for each image (for example in a JSON next to the
-   images) so you can redo any of them.
+6. **Record each image.** Write the prompt, the refs and the output path for
+   each image (for example in a JSON next to the images) so you can redo any
+   of them.
+
+## Several images at once
+
+The calling agent can ask for several images in one request, and
+independent images run **in parallel**: one `codex exec` call per image,
+started together, each with its own prompt file, log and output stem. Each
+call is its own Codex session with its own `generated_images/<session-id>/`
+folder, so results never mix, and the collector matches each log to its own
+images.
+
+Tested with 3 calls at once: all finished in 39 s of wall time (35–39 s
+each, about 8.7k tokens each), against roughly 2 minutes one after another.
+
+```bash
+# one prompt file per image: <dir>/<stem>.prompt.txt (template from step 2)
+for stem in teapot lantern cup; do
+  codex exec --skip-git-repo-check --sandbox read-only -C <dir> - \
+    < <dir>/$stem.prompt.txt > <dir>/$stem.codex.log 2>&1 &
+done
+wait
+for stem in teapot lantern cup; do
+  python3 <skill-dir>/scripts/collect_codex_images.py \
+    --log <dir>/$stem.codex.log --out <dir> --name $stem
+done
+```
+
+- **Parallel only when independent.** An image that needs another image as
+  its reference (`-i`), such as a turnaround of a character you are still
+  generating, waits for that one to finish. Run such chains in stages:
+  generate the parent, check it, then fan out its children in parallel.
+- **Use a unique stem per image** so logs and outputs don't overwrite each
+  other.
+- **Keep batches small: up to 4 at a time** unless the user asks for more.
+  Every image costs quota, a batch of 4 spends four images' worth at once,
+  and larger bursts may hit the plan's rate limits (not tested). Tell the
+  user the count before starting a batch.
+- **Check every image** (step 5) before reporting the batch, and redo only
+  the ones that failed.
 
 ## Gotchas
 

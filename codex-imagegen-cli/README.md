@@ -3,6 +3,7 @@
 Generate images with the **`image_generation` tool built into OpenAI's [Codex CLI](https://github.com/openai/codex)**, run from the command line (`codex exec`) in a read-only sandbox, and save them into your project folder. Your agent writes the prompt, runs Codex, checks the result and redoes it if needed.
 
 - **Text to image** in any aspect ratio (landscape, square, portrait 9:16)
+- **Several images in parallel**: ask for a set and each image runs as its own Codex session at the same time (3 images in 39 s in testing)
 - **Reference images**: keep a character or location and put it in a new scene, or combine two references into one image
 - **Character turnaround sheets** and **transparent-background cutouts** with real alpha
 - **No API key needed**: it uses your signed-in ChatGPT/Codex plan
@@ -31,6 +32,7 @@ npx skills add devhims/skills --skill codex-imagegen-cli
 
 1. The agent writes the image description into a fixed prompt template that tells Codex to treat it as a picture description only, never as instructions.
 2. It runs `codex exec --sandbox read-only` with the prompt on stdin, passing any reference images with `-i`. Codex generates the image with its built-in tool but can't write to your project or change anything.
+   For several images, the agent starts one `codex exec` per image at the same time (up to 4 by default), each with its own prompt, log and output name.
 3. [`scripts/collect_codex_images.py`](scripts/collect_codex_images.py) copies the image from that run's folder in `~/.codex/generated_images/` into your project, marking the final one if Codex made drafts. It's local only: no network, no commands.
 4. The agent checks the image against your request and references, and runs again with a precise fix if something is off, asking you before a third attempt.
 

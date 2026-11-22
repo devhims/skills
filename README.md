@@ -8,7 +8,7 @@ They work with Claude Code, Codex, Cursor, Kiro and other agents that support `S
 
 | Skill | What it does |
 |---|---|
-| [codex-imagegen-cli](codex-imagegen-cli/) | Generate images with the image tool built into OpenAI's Codex CLI, with reference images, turnaround sheets and transparent cutouts. Read-only sandbox, no API key needed. |
+| [codex-imagegen-cli](codex-imagegen-cli/) | Generate images with the image tool built into OpenAI's Codex CLI, with reference images, parallel batches, turnaround sheets and transparent cutouts. Read-only sandbox, no API key needed. |
 
 ## Install
 
